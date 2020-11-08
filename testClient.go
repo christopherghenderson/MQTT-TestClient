@@ -4,12 +4,11 @@
 package mqtttestclient
 
 import (
-	//spb "com_cirruslink_sparkplug_protobuf"
 	"fmt"
 	"reflect"
 	"time"
-
 	MQTT "github.com/eclipse/paho.mqtt.golang"
+	spb "github.com/christopherghenderson/sparkplugbProtobufGo"
 	"github.com/golang/protobuf/proto"
 )
 
@@ -58,15 +57,15 @@ func (testClient TestClient) SendMessage(topic string, message interface{}) {
 
 // WriteNBirth writes the NBirth message
 func (testClient *TestClient) WriteNBirth() {
-	payLoad := new(Payload)
+	payLoad := new(spb.Payload)
 	payLoad.Timestamp = proto.Uint64(uint64(time.Now().Unix()) * 1000)
 	payLoad.Seq = proto.Uint64(0)
 	// Create Metric
-	metric := new(Payload_Metric)
+	metric := new(spb.Payload_Metric)
 	// Add Device Name
 	metric.Name = proto.String("bdSeq")
 	// Add Value
-	flt := new(Payload_Metric_IntValue)
+	flt := new(spb.Payload_Metric_IntValue)
 	flt.IntValue = 0
 	metric.Value = flt
 
@@ -85,13 +84,13 @@ func (testClient *TestClient) WriteNBirth() {
 
 // WriteData writes a message for all devices in Devices.  msgType can be either DDATA or DBIRTH.
 func (testClient *TestClient) WriteData(station *Station, msgType string) {
-	payLoad := new(Payload)
+	payLoad := new(spb.Payload)
 	payLoad.Timestamp = proto.Uint64(uint64(time.Now().Unix() * 1000))
 	payLoad.Seq = proto.Uint64(testClient.GetSequence())
 	//fmt.Println("Broadcast Station '" + station.name + "' Devices:" + fmt.Sprint(len(station.Devices)))
 	for _, device := range station.Devices {
 		// Create Metric
-		metric := new(Payload_Metric)
+		metric := new(spb.Payload_Metric)
 		// Add Device Name
 		if device.analDigital == "analog" {
 			metric.Name = proto.String("analog/" + device.deviceID)
@@ -101,11 +100,11 @@ func (testClient *TestClient) WriteData(station *Station, msgType string) {
 		// Add Value
 		if device.Value != nil {
 			if fmt.Sprint(reflect.TypeOf(device.Value)) == "float32" {
-				flt := new(Payload_Metric_FloatValue)
+				flt := new(spb.Payload_Metric_FloatValue)
 				flt.FloatValue = device.Value.(float32)
 				metric.Value = flt
 			} else {
-				bl := new(Payload_Metric_BooleanValue)
+				bl := new(spb.Payload_Metric_BooleanValue)
 				bl.BooleanValue = device.Value.(bool)
 				metric.Value = bl
 			}
@@ -116,12 +115,12 @@ func (testClient *TestClient) WriteData(station *Station, msgType string) {
 		metric.Timestamp = proto.Uint64(uint64(time.Now().Unix() * 1000))
 
 		// Create PropertySet
-		propertySet := new(Payload_PropertySet)
+		propertySet := new(spb.Payload_PropertySet)
 		// Value
-		propertyValArray := []*Payload_PropertyValue{}
-		propertyValRef := new(Payload_PropertyValue_IntValue)
+		propertyValArray := []*spb.Payload_PropertyValue{}
+		propertyValRef := new(spb.Payload_PropertyValue_IntValue)
 		propertyValRef.IntValue = 192
-		propertyVal := new(Payload_PropertyValue)
+		propertyVal := new(spb.Payload_PropertyValue)
 		propertyVal.Type = proto.Uint32(3)
 		propertyVal.Value = propertyValRef
 		propertyValArray = append(propertyValArray, propertyVal)
